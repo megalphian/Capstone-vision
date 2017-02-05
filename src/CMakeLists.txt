@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project( opencv_tut )
+find_package( OpenCV REQUIRED )
+add_executable( clr_detect colour_detect.cpp)
+target_link_libraries( clr_detect ${OpenCV_LIBS} )
