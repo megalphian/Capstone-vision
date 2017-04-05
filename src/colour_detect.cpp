@@ -75,14 +75,14 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed, const S
 	vector< vector<Point> > contours;
 	vector<Vec4i> hierarchy;
 	//find contours of filtered image using openCV findContours function
-	findContours(temp,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
+	findContours(temp,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE );
 	//use moments method to find our filtered object
 	double refArea = 0;
 	bool objectFound = false;
 	if (hierarchy.size() > 0) {
 		int numObjects = hierarchy.size();
         //if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
-        if(numObjects<MAX_NUM_OBJECTS){
+        //if(numObjects<MAX_NUM_OBJECTS){
 			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
 
 				Moments moment = moments((cv::Mat)contours[index]);
@@ -107,8 +107,8 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed, const S
 				//draw object location on screen
 				drawObject(x,y,cameraFeed, colour);}
 
-		}else putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
-	}
+		}//else putText(cameraFeed,"OBJECT NOT DETECTABLE",Point(0,50),1,2,Scalar(0,0,255),2);
+	
 }
 
 int main(int argc, char* argv[])
@@ -120,21 +120,40 @@ Mat camera1;
 Mat HSV;
 Mat Yellow;
 Mat Red;
+Mat Orange;
+Mat Green;
 int x=0,y=0;
 VideoCapture capture;
-capture.open(0);
+capture.open(1);
 capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH);
-//capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT);
+
 while(1)
 {
 capture.read(camera);
 cvtColor(camera,HSV,COLOR_BGR2HSV);
 split(HSV, channels);
-//cvtColor(camera,grey,COLOR_BGR2GRAY);
-inRange(HSV,Scalar(23,170,170),Scalar(38,S_MAX,V_MAX),Yellow);
-inRange(HSV,Scalar(160,170,170),Scalar(180,S_MAX,V_MAX),Red);
+inRange(HSV,Scalar(23,150,160),Scalar(38,S_MAX,V_MAX),Yellow);
+inRange(HSV,Scalar(160,150,160),Scalar(180,S_MAX,V_MAX),Red);
+inRange(HSV,Scalar(1,150,160),Scalar(22,S_MAX,V_MAX),Orange);
+inRange(HSV,Scalar(42,100,100),Scalar(55,S_MAX,V_MAX),Green);
 trackFilteredObject(x,y,Yellow,camera,Scalar(0,255,255));
 trackFilteredObject(x,y,Red,camera,Scalar(0,0,255));
+trackFilteredObject(x,y,Orange,camera,Scalar(0,165,255));
+trackFilteredObject(x,y,Green,camera,Scalar(0,255,0));
+imshow(windowName,camera);
+//imshow("Colour Filter", Orange);
+waitKey(30);
+}
+return(0);
+}
+
+
+/* Deleted code snippets
+
+//capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT);
+
+//cvtColor(camera,grey,COLOR_BGR2GRAY);
+
 /*temp = bitwise_and(Red,channels[0]);
 temp1 = bitwise_and(Red,channels[1]);
 temp2 = bitwise_and(Red,channels[2]);
@@ -150,12 +169,8 @@ temp2 = bitwise_and(Red,channels[2]);
 }*/
 //hconcat(camera1,camera
 //cout<<camera;
-imshow(windowName,camera);
+
 //imshow(windowName1,HSV);
-//imshow("Yellow object", Yellow);
+//
 //imshow("Red object", Red);
 //imshow("Red object 1", camera1);
-waitKey(30);
-}
-return(0);
-}
